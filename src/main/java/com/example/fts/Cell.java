@@ -249,11 +249,11 @@ abstract class Antigen extends NPC {
             // Apply stronger repulsion
             this.setDirection(dx * 2, dy * 2);
 
-            // Activate invincibility
-            makeInvincible();
-
             // Handle specific damage
             onShieldContact();
+
+            // Activate invincibility
+            makeInvincible();
         }
     }
 
