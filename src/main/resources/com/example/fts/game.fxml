@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.control.ProgressBar?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.fts.GameController"
+      alignment="CENTER"
+      spacing="10"
+      style="-fx-background-color: #f0f0f0;">
+
+    <HBox alignment="CENTER" spacing="20">
+        <Label text="Normal Cells: " />
+        <Label fx:id="normalCellsCount" text="0" />
+        <Label text="Bacteria: " />
+        <Label fx:id="bacteriaCount" text="0" />
+        <Label text="Viruses: " />
+        <Label fx:id="virusCount" text="0" />
+        <Label text="Time: " />
+        <Label fx:id="timeLabel" text="0" />
+    </HBox>
+
+    <HBox alignment="CENTER" spacing="20">
+        <Label text="Health: " />
+        <Label fx:id="healthLabel" text="100" />
+        <Label text="Shield: " />
+        <ProgressBar fx:id="shieldBar" prefWidth="150" progress="1.0" />
+    </HBox>
+
+    <Pane fx:id="gamePane" prefWidth="750" prefHeight="500" style="-fx-background-color: white; -fx-border-color: black;" />
+
+    <HBox alignment="CENTER" spacing="20">
+        <Button fx:id="startButton" text="Start Game" onAction="#startGame" />
+        <Button fx:id="resetButton" text="Reset Game" onAction="#resetGame" />
+    </HBox>
+
+    <Label fx:id="gameStatusLabel" text="Use WASD keys to move, SHIFT for shield. Eliminate all enemies!" />
+</VBox>
