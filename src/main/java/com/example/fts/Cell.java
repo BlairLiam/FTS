@@ -10,22 +10,24 @@ public abstract class Cell extends Pane {
     protected double y;
     protected Circle circle;
     protected double speed;
+    protected double size;
     protected double directionX, directionY;
     protected boolean isAlive = true;
 
-    public Cell(double x, double y, Color color, double speed) {
+    public Cell(double x, double y, Color color, double speed, double size) {
         this.x = x;
         this.y = y;
         this.speed = speed;
+        this.size = size;
 
         // Initialize direction
         randomizeDirection();
 
         // Create visual representation
-        circle = new Circle(GameConstants.CELL_RADIUS);
+        circle = new Circle(size);
         circle.setFill(color);
-        circle.setCenterX(GameConstants.CELL_RADIUS);
-        circle.setCenterY(GameConstants.CELL_RADIUS);
+        circle.setCenterX(size);
+        circle.setCenterY(size);
         getChildren().add(circle);
 
         // Set position
@@ -61,7 +63,7 @@ public abstract class Cell extends Pane {
     }
 
     public double getRadius() {
-        return GameConstants.CELL_RADIUS;
+        return size;
     }
 
     public boolean isAlive() {
@@ -74,14 +76,14 @@ public abstract class Cell extends Pane {
 
     public boolean intersects(Cell other) {
         // If either cell is a Player and the other is NPC (not antigen), no intersection
-        if ((this instanceof PlayerCell && (other instanceof Normal || other instanceof Infected)) ||
-                (other instanceof PlayerCell && (this instanceof Normal || this instanceof Infected))) {
+        if ((this instanceof Player && (other instanceof Normal || other instanceof Infected)) ||
+                (other instanceof Player && (this instanceof Normal || this instanceof Infected))) {
             return false;
         }
 
         // Regular intersection check
-        double dx = (this.x + GameConstants.CELL_RADIUS) - (other.x + GameConstants.CELL_RADIUS);
-        double dy = (this.y + GameConstants.CELL_RADIUS) - (other.y + GameConstants.CELL_RADIUS);
+        double dx = (this.x + this.size) - (other.x + other.size);
+        double dy = (this.y + this.size) - (other.y + other.size);
         double distance = Math.sqrt(dx * dx + dy * dy);
         return distance < (this.getRadius() + other.getRadius());
     }
@@ -100,9 +102,9 @@ public abstract class Cell extends Pane {
             directionX = Math.abs(directionX); // Force positive X direction
             newX = 1; // Push slightly away from wall
             hitWall = true;
-        } else if (newX >= maxX - 2 * GameConstants.CELL_RADIUS) {
+        } else if (newX >= maxX - 2 * size) {
             directionX = -Math.abs(directionX); // Force negative X direction
-            newX = maxX - 2 * GameConstants.CELL_RADIUS - 1; // Push slightly away from wall
+            newX = maxX - 2 * size - 1; // Push slightly away from wall
             hitWall = true;
         }
 
@@ -110,9 +112,9 @@ public abstract class Cell extends Pane {
             directionY = Math.abs(directionY); // Force positive Y direction
             newY = 1; // Push slightly away from wall
             hitWall = true;
-        } else if (newY >= maxY - 2 * GameConstants.CELL_RADIUS) {
+        } else if (newY >= maxY - 2 * size) {
             directionY = -Math.abs(directionY); // Force negative Y direction
-            newY = maxY - 2 * GameConstants.CELL_RADIUS - 1; // Push slightly away from wall
+            newY = maxY - 2 * size - 1; // Push slightly away from wall
             hitWall = true;
         }
 
@@ -131,8 +133,8 @@ public abstract class Cell extends Pane {
     // Handle collision with another cell
     public void collideWith(Cell other) {
         // Calculate vector from other cell to this cell
-        double dx = (this.x + GameConstants.CELL_RADIUS) - (other.x + GameConstants.CELL_RADIUS);
-        double dy = (this.y + GameConstants.CELL_RADIUS) - (other.y + GameConstants.CELL_RADIUS);
+        double dx = (this.x + this.size) - (other.x + other.size);
+        double dy = (this.y + this.size) - (other.y + other.size);
 
         // Normalize the direction vector
         double length = Math.sqrt(dx * dx + dy * dy);
@@ -167,8 +169,8 @@ public abstract class Cell extends Pane {
 
 // NPC Cell - base class for all non-player cells
 abstract class NPC extends Cell {
-    public NPC(double x, double y, Color color, double speed) {
-        super(x, y, color, speed);
+    public NPC(double x, double y, Color color, double speed, double size) {
+        super(x, y, color, speed, size);
     }
 
     @Override
@@ -184,8 +186,8 @@ abstract class Antigen extends NPC {
     protected double flickerTimer = 0;
     protected Color originalColor;
 
-    public Antigen(double x, double y, Color color, double speed) {
-        super(x, y, color, speed);
+    public Antigen(double x, double y, Color color, double speed, double size) {
+        super(x, y, color, speed, size);
         originalColor = color;
     }
 
@@ -233,11 +235,11 @@ abstract class Antigen extends NPC {
     }
 
     // Method to handle shield contact
-    public void onShieldContact(PlayerCell player) {
+    public void onShieldContact(Player player) {
         if (!invincible) {
             // Calculate vector from player to this antigen
-            double dx = (this.x + GameConstants.CELL_RADIUS) - (player.getX() + player.getRadius());
-            double dy = (this.y + GameConstants.CELL_RADIUS) - (player.getY() + player.getRadius());
+            double dx = (this.x + player.size) - (player.getX() + player.getRadius());
+            double dy = (this.y + player.size) - (player.getY() + player.getRadius());
 
             // Normalize
             double length = Math.sqrt(dx * dx + dy * dy);
@@ -263,7 +265,7 @@ abstract class Antigen extends NPC {
 }
 
 // Player (White Blood Cell)
-class PlayerCell extends Cell {
+class Player extends Cell {
     private boolean movingUp, movingDown, movingLeft, movingRight;
     private boolean shieldActive = false;
     private double shieldTimer = 0;
@@ -276,8 +278,8 @@ class PlayerCell extends Cell {
     private double flickerTimer = 0;
     private Color originalColor;
 
-    public PlayerCell(double x, double y) {
-        super(x, y, Color.WHITE, GameConstants.PLAYER_SPEED);
+    public Player(double x, double y) {
+        super(x, y, Color.WHITE, GameConstants.PLAYER_SPEED, GameConstants.PLAYER_SIZE);
         originalColor = Color.WHITE;
         circle.setStroke(Color.BLACK);
         circle.setStrokeWidth(2);
@@ -395,8 +397,8 @@ class PlayerCell extends Cell {
         }
 
         // Manual movement (not using the inherited move method)
-        double newX = Math.max(0, Math.min(maxX - 2 * GameConstants.CELL_RADIUS, x + dx));
-        double newY = Math.max(0, Math.min(maxY - 2 * GameConstants.CELL_RADIUS, y + dy));
+        double newX = Math.max(0, Math.min(maxX - 2 * size, x + dx));
+        double newY = Math.max(0, Math.min(maxY - 2 * size, y + dy));
         setPosition(newX, newY);
     }
 
@@ -456,7 +458,7 @@ class Normal extends NPC {
     private boolean infected = false;
 
     public Normal(double x, double y) {
-        super(x, y, Color.GREEN, GameConstants.NORMAL_CELL_SPEED);
+        super(x, y, Color.GREEN, GameConstants.NORMAL_CELL_SPEED, GameConstants.NORMAL_CELL_SIZE);
     }
 
     public boolean isInfected() {
@@ -485,7 +487,7 @@ class Bacteria extends Antigen {
     private int health = GameConstants.BACTERIA_HEALTH;
 
     public Bacteria(double x, double y) {
-        super(x, y, Color.RED, GameConstants.BACTERIA_SPEED);
+        super(x, y, Color.RED, GameConstants.BACTERIA_SPEED, GameConstants.BACTERIA_SIZE);
     }
 
     public void takeDamage() {
@@ -518,7 +520,7 @@ class Bacteria extends Antigen {
 // Virus Cell
 class Virus extends Antigen {
     public Virus(double x, double y) {
-        super(x, y, Color.PURPLE, GameConstants.VIRUS_SPEED);
+        super(x, y, Color.PURPLE, GameConstants.VIRUS_SPEED, GameConstants.VIRUS_SIZE);
         // Ensure we have a non-zero initial direction
         while (Math.abs(directionX) < 0.2 || Math.abs(directionY) < 0.2) {
             randomizeDirection();
@@ -572,7 +574,7 @@ class Infected extends NPC {
     private int bounceCount = 0;
 
     public Infected(double x, double y) {
-        super(x, y, Color.ORANGE, GameConstants.INFECTED_SPEED);
+        super(x, y, Color.ORANGE, GameConstants.INFECTED_SPEED, GameConstants.INFECTED_SIZE);
     }
 
     @Override

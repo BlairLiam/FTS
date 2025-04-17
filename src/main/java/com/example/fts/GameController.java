@@ -31,11 +31,11 @@ public class GameController implements Initializable {
     @FXML private ProgressBar shieldBar;
 
     private static final int INITIAL_NORMAL_CELLS = 20;
-    private static final int INITIAL_BACTERIA = 3;
+    private static final int INITIAL_BACTERIA = 1;
     private static final int INITIAL_VIRUSES = 2;
     private static final double NORMAL_CELL_REPRODUCTION_TIME = 15; // seconds
 
-    private PlayerCell player;
+    private Player player;
     private List<Normal> normalCells = new ArrayList<>();
     private List<Bacteria> bacteriaCells = new ArrayList<>();
     private List<Virus> virusCells = new ArrayList<>();
@@ -108,12 +108,13 @@ public class GameController implements Initializable {
         bacteriaCells.clear();
         virusCells.clear();
         infectedCells.clear();
+        NPCs.clear();
         gamePane.getChildren().clear();
 
         // Create player at center
         double centerX = gamePane.getPrefWidth() / 2 - 15;
         double centerY = gamePane.getPrefHeight() / 2 - 15;
-        player = new PlayerCell(centerX, centerY);
+        player = new Player(centerX, centerY);
         gamePane.getChildren().add(player);
 
         // Place normal cells
@@ -234,7 +235,7 @@ public class GameController implements Initializable {
             // Check if infected cell should transform into viruses
             if (infected.getBounceCount() >= 2) {
                 // Create two viruses at this location
-                for (int i = 0; i < 2; i++) {
+                for (int i = 0; i < GameConstants.VIRUS_DIVISION; i++) {
                     Virus virus = new Virus(infected.getX(), infected.getY());
                     virusCells.add(virus);
                     gamePane.getChildren().add(virus);
@@ -398,8 +399,8 @@ public class GameController implements Initializable {
     private void placeRandomCell(Cell cell) {
         // Add padding to prevent spawning too close to edges
         double padding = cell.getRadius() * 3;
-        double x = padding + Math.random() * (gamePane.getPrefWidth() - padding * 2);
-        double y = padding + Math.random() * (gamePane.getPrefHeight() - padding * 2);
+        double x = padding + Math.random() * (gamePane.getWidth() - padding * 2);
+        double y = padding + Math.random() * (gamePane.getHeight() - padding * 2);
 
         // Ensure we don't place too close to player
         double playerX = player.getX();
@@ -465,7 +466,7 @@ public class GameController implements Initializable {
         startButton.setDisable(false);
     }
 
-    public void handleContinuousContactWithPlayer(PlayerCell player, Antigen antigen) {
+    public void handleContinuousContactWithPlayer(Player player, Antigen antigen) {
         if (player.intersects(antigen)) {
             if (antigen.isInvincible()) {
                 // No interaction while antigen is invincible
