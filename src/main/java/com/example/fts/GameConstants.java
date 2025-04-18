@@ -33,5 +33,6 @@ public class GameConstants {
 
     // Game mechanics
     public static final int BACTERIA_HEALTH = 2;
-    public static final int INFECTED_BOUNCE_TRANSFORM = 2;
+    public static final double INFECTED_CELL_TIME = 5;
+    public static final double NORMAL_CELL_REPRODUCTION_TIME = 10; // seconds
 }

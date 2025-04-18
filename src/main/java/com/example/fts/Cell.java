@@ -118,16 +118,7 @@ public abstract class Cell extends Pane {
             hitWall = true;
         }
 
-        if (hitWall) {
-            onBounce();
-        }
-
         setPosition(newX, newY);
-    }
-
-    // Called when this cell bounces off a wall or another cell
-    protected void onBounce() {
-        // Override in subclasses if needed
     }
 
     // Handle collision with another cell
@@ -154,9 +145,6 @@ public abstract class Cell extends Pane {
             this.y += dy * pushDistance / 2;
             this.relocate(this.x, this.y);
         }
-
-        // Call the bounce handler
-        onBounce();
     }
 
     public void setDirection(double dirX, double dirY) {
@@ -278,8 +266,8 @@ class Player extends Cell {
     private double flickerTimer = 0;
     private Color originalColor;
 
-    public Player(double x, double y) {
-        super(x, y, Color.WHITE, GameConstants.PLAYER_SPEED, GameConstants.PLAYER_SIZE);
+    public Player(double x, double y, double speed, double size) {
+        super(x, y, Color.WHITE, speed, size);
         originalColor = Color.WHITE;
         circle.setStroke(Color.BLACK);
         circle.setStrokeWidth(2);
@@ -305,6 +293,7 @@ class Player extends Cell {
         if (shieldCooldown <= 0) {
             shieldActive = true;
             shieldTimer = GameConstants.SHIELD_DURATION;
+            speed *= 2;
             // Visual change to indicate shield is active
             circle.setStroke(Color.CYAN);
             circle.setStrokeWidth(4);
@@ -351,6 +340,7 @@ class Player extends Cell {
             if (shieldTimer <= 0) {
                 shieldActive = false;
                 shieldCooldown = GameConstants.SHIELD_COOLDOWN;
+                speed = GameConstants.PLAYER_SPEED;
                 // Visual change to indicate shield is inactive
                 circle.setStroke(Color.BLACK);
                 circle.setStrokeWidth(2);
@@ -452,9 +442,21 @@ class Player extends Cell {
     }
 }
 
+class Neutrophil extends Player {
+    public Neutrophil(double x, double y) {
+        super(x, y, GameConstants.PLAYER_SPEED * 2, GameConstants.PLAYER_SIZE);
+    }
+    // You can override update or add extra attack logic here later
+}
+
+class Macrophage extends Player {
+    public Macrophage(double x, double y) {
+        super(x, y, GameConstants.PLAYER_SPEED, GameConstants.PLAYER_SIZE * 2);
+    }
+}
+
 // Normal Cell
 class Normal extends NPC {
-    private int bounceCount = 0;
     private boolean infected = false;
 
     public Normal(double x, double y) {
@@ -468,17 +470,6 @@ class Normal extends NPC {
     public void infect() {
         infected = true;
         circle.setFill(Color.ORANGE); // Visual indication of infection
-    }
-
-    public int getBounceCount() {
-        return bounceCount;
-    }
-
-    @Override
-    protected void onBounce() {
-        if (infected) {
-            bounceCount++;
-        }
     }
 }
 
@@ -571,19 +562,25 @@ class Virus extends Antigen {
 
 // Infected Normal Cell (will turn into viruses)
 class Infected extends NPC {
-    private int bounceCount = 0;
+    private double infectionProgress = 0; // Change to track elapsed time instead of remaining time
 
     public Infected(double x, double y) {
         super(x, y, Color.ORANGE, GameConstants.INFECTED_SPEED, GameConstants.INFECTED_SIZE);
     }
 
     @Override
-    protected void onBounce() {
-        bounceCount++;
-        // After two bounces, it will be transformed into viruses in the GameController
+    public void update(double elapsedTime, double maxX, double maxY) {
+        super.update(elapsedTime, maxX, maxY);
+
+        // Update infection progress
+        infectionProgress += elapsedTime;
     }
 
-    public int getBounceCount() {
-        return bounceCount;
+    public double getInfectionProgress() {
+        return infectionProgress;
+    }
+
+    public boolean isReadyToTransform() {
+        return infectionProgress >= GameConstants.INFECTED_CELL_TIME;
     }
 }

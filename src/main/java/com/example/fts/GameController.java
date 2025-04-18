@@ -33,7 +33,6 @@ public class GameController implements Initializable {
     private static final int INITIAL_NORMAL_CELLS = 20;
     private static final int INITIAL_BACTERIA = 1;
     private static final int INITIAL_VIRUSES = 2;
-    private static final double NORMAL_CELL_REPRODUCTION_TIME = 15; // seconds
 
     private Player player;
     private List<Normal> normalCells = new ArrayList<>();
@@ -114,7 +113,7 @@ public class GameController implements Initializable {
         // Create player at center
         double centerX = gamePane.getPrefWidth() / 2 - 15;
         double centerY = gamePane.getPrefHeight() / 2 - 15;
-        player = new Player(centerX, centerY);
+        player = new Macrophage(centerX, centerY);
         gamePane.getChildren().add(player);
 
         // Place normal cells
@@ -200,7 +199,7 @@ public class GameController implements Initializable {
 
         // Update cell reproduction timer
         cellReproductionTimer += elapsedTime;
-        if (cellReproductionTimer >= NORMAL_CELL_REPRODUCTION_TIME) {
+        if (cellReproductionTimer >= GameConstants.NORMAL_CELL_REPRODUCTION_TIME) {
             cellReproductionTimer = 0;
             reproduceNormalCells();
         }
@@ -233,8 +232,8 @@ public class GameController implements Initializable {
             infected.update(elapsedTime, gamePane.getWidth(), gamePane.getHeight());
 
             // Check if infected cell should transform into viruses
-            if (infected.getBounceCount() >= 2) {
-                // Create two viruses at this location
+            if (infected.isReadyToTransform()) {
+                // Create viruses at this location
                 for (int i = 0; i < GameConstants.VIRUS_DIVISION; i++) {
                     Virus virus = new Virus(infected.getX(), infected.getY());
                     virusCells.add(virus);
@@ -292,6 +291,7 @@ public class GameController implements Initializable {
             }
         }
 
+        /*
         for (Normal normal : new ArrayList<>(normalCells)) {
             if (normal.intersects(player)) {
                 player.handleCellCollision(normal);
@@ -303,6 +303,7 @@ public class GameController implements Initializable {
                 player.handleCellCollision(infected);
             }
         }
+         */
 
         // Check bacteria collisions with normal cells
         for (Bacteria bacteria : new ArrayList<>(bacteriaCells)) {
